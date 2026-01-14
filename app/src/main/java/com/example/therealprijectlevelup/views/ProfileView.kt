@@ -16,18 +16,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
 @Composable
-fun ProfileView(onNavigate: (String) -> Unit) { // SE AGREGÓ EL PARÁMETRO DE NAVEGACIÓN
+fun ProfileView(onNavigate: (String) -> Unit, viewModel: SettingsViewModel) { // SE AGREGÓ EL PARÁMETRO DE NAVEGACIÓN
     Scaffold(
-        topBar = { LevelUpHeader(title = "Level UP") },
+        topBar = { LevelUpHeader(title = "Level UP", viewModel = viewModel) },
         bottomBar = {
             LevelUpBottomNavigation(
                 selectedTab = "profile",
                 onTabSelected = onNavigate // PASAMOS LA FUNCIÓN AL COMPONENTE REUTILIZABLE
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier

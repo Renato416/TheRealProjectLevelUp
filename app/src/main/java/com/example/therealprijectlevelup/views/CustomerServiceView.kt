@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
 // MODELO DE DATOS PARA LOS MENSAJES
 data class ChatMessage(
@@ -23,7 +24,7 @@ data class ChatMessage(
 )
 
 @Composable
-fun CustomerServiceView(onNavigate: (String) -> Unit) {
+fun CustomerServiceView(onNavigate: (String) -> Unit, viewModel: SettingsViewModel) {
     val messages = listOf(
         ChatMessage("en que te puedo ayudar?", false),
         ChatMessage("que medios de pago poseen?", true),
@@ -32,9 +33,9 @@ fun CustomerServiceView(onNavigate: (String) -> Unit) {
     )
 
     Scaffold(
-        topBar = { LevelUpHeader(title = "Level UP") },
+        topBar = { LevelUpHeader(title = "Level UP", viewModel = viewModel) },
         bottomBar = { LevelUpBottomNavigation(selectedTab = "messages", onTabSelected = onNavigate) },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier

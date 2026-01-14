@@ -7,16 +7,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// IMPORTANTE: REEMPLAZA CON LA RUTA REAL DE TU VIEWMODEL
+import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LevelUpHeader(title: String) {
+fun LevelUpHeader(
+    title: String,
+    viewModel: SettingsViewModel // INYECTAMOS EL VIEWMODEL
+) {
+    // OBSERVAMOS EL ESTADO ACTUAL DEL MODO OSCURO
+    val isDark by viewModel.isDarkMode.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,14 +67,25 @@ fun LevelUpHeader(title: String) {
                 )
             )
 
+            // BOTÓN CON FUNCIONALIDAD DE DATASTORE
             Button(
-                onClick = { /* ACCIÓN MODO OSCURO */ },
+                onClick = {
+                    // LLAMAMOS A LA LÓGICA DEL VIEWMODEL PARA INVERTIR EL TEMA
+                    viewModel.toggleDarkMode(!isDark)
+                },
                 modifier = Modifier.height(50.dp),
                 shape = RoundedCornerShape(12.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                colors = ButtonDefaults.buttonColors(
+                    // EL COLOR DEL BOTÓN CAMBIA SEGÚN EL MODO PARA DAR FEEDBACK VISUAL
+                    containerColor = if (isDark) Color.White else Color.Black
+                )
             ) {
-                Text(text = "MODO", fontSize = 12.sp, color = Color.White)
+                Text(
+                    text = if (isDark) "LUZ" else "MODO",
+                    fontSize = 12.sp,
+                    color = if (isDark) Color.Black else Color.White
+                )
             }
         }
     }

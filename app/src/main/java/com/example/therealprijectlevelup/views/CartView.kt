@@ -15,26 +15,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// IMPORTANTE: VERIFICA QUE LA CARPETA SE LLAME 'viewmodels' EN MINÚSCULAS
+import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
-// MODELO DE DATOS PARA LOS ELEMENTOS DEL CARRITO
 data class CartItemData(
-    val id: Int,
-    val name: String,
-    val quantity: Int,
-    val price: String
+    val id: Int, val name: String, val quantity: Int, val price: String
 )
 
 @Composable
-fun CartView(onNavigate: (String) -> Unit) {
+fun CartView(onNavigate: (String) -> Unit, viewModel: SettingsViewModel) {
     val cartItems = listOf(
         CartItemData(1, "Audifonos gamer estilo creeper", 2, "41.980"),
         CartItemData(2, "Mesa gamer RGB", 1, "110.990")
     )
 
     Scaffold(
-        topBar = { LevelUpHeader(title = "Level UP") },
+        topBar = { LevelUpHeader(title = "Level UP", viewModel = viewModel) },
         bottomBar = { LevelUpBottomNavigation(selectedTab = "cart", onTabSelected = onNavigate) },
-        containerColor = Color.White
+        // CORRECCIÓN: USAR COLOR DEL TEMA
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -42,24 +41,17 @@ fun CartView(onNavigate: (String) -> Unit) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // LISTA DE PRODUCTOS EN EL CARRITO
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(cartItems) { item ->
-                    CartItemRow(item)
-                }
+                items(cartItems) { item -> CartItemRow(item) }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // SECCIÓN DE CÓDIGO DE DESCUENTO
             DiscountCodeSection()
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            // SECCIÓN DE TOTAL Y BOTÓN DE PAGO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -68,12 +60,12 @@ fun CartView(onNavigate: (String) -> Unit) {
                 Text(
                     text = "Total: $122.376",
                     fontSize = 32.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Color.Black
+                    // CORRECCIÓN: TEXTO REACTIVO AL MODO OSCURO
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Button(
-                    onClick = { /* LÓGICA DE PAGO */ },
+                    onClick = { /* ACCIÓN */ },
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5877FF)),
                     modifier = Modifier.height(48.dp)
@@ -88,37 +80,41 @@ fun CartView(onNavigate: (String) -> Unit) {
 @Composable
 fun CartItemRow(item: CartItemData) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Black, RoundedCornerShape(20.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.fillMaxWidth(),
+        // CORRECCIÓN: BORDE REACTIVO
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         shape = RoundedCornerShape(20.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // PLACEHOLDER DE IMAGEN EN BLANCO
             Surface(
                 modifier = Modifier.size(80.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
+                // CORRECCIÓN: FONDO DE IMAGEN QUE NO DESLUMBRE EN MODO OSCURO
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 border = BorderStroke(1.dp, Color.LightGray)
             ) { }
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.name, fontSize = 14.sp, fontWeight = FontWeight.Normal)
+                Text(
+                    text = item.name,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "${item.quantity} u.", fontSize = 14.sp)
+                    Text(text = "${item.quantity} u.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
                         text = "$${item.price}",
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Normal
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -129,22 +125,19 @@ fun CartItemRow(item: CartItemData) {
 @Composable
 fun DiscountCodeSection() {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color.Black, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "codigo de descuento:", fontSize = 14.sp)
+            Text(text = "codigo de descuento:", color = MaterialTheme.colorScheme.onSurface)
             Column(horizontalAlignment = Alignment.End) {
-                Text(text = "N1KOL4 T3SL4", fontSize = 14.sp)
-                Text(text = "20% Descuento", fontSize = 14.sp)
+                Text(text = "N1KOL4 T3SL4", color = MaterialTheme.colorScheme.onSurface)
+                Text(text = "20% Descuento", color = Color(0xFF4CAF50)) // VERDE MANTENIDO
             }
         }
     }

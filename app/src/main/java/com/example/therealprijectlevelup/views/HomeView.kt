@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
 // 1. SOLUCIÓN AL ERROR 'Unresolved reference ProductPlaceholder'
 // DEFINIMOS EL MODELO DE DATOS (REPRESENTA EL "MODEL" EN MVVM)
@@ -25,7 +26,7 @@ data class ProductPlaceholder(
 )
 
 @Composable
-fun HomeView(onNavigate: (String) -> Unit) {
+fun HomeView(onNavigate: (String) -> Unit, viewModel: SettingsViewModel) {
     // AL DEFINIR LA DATA CLASS ARRIBA, KOTLIN YA SABE QUE ESTA ES UNA LISTA DE 'ProductPlaceholder'
     val products = listOf(
         ProductPlaceholder(1, "Silla Gamer", "250.990"),
@@ -37,9 +38,9 @@ fun HomeView(onNavigate: (String) -> Unit) {
     )
 
     Scaffold(
-        topBar = { LevelUpHeader(title = "Level UP") },
+        topBar = { LevelUpHeader(title = "Level UP", viewModel = viewModel) },
         bottomBar = { LevelUpBottomNavigation(selectedTab = "home", onTabSelected = onNavigate) },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -67,41 +68,40 @@ fun HomeView(onNavigate: (String) -> Unit) {
 // 3. DEFINICIÓN DEL COMPONENTE VISUAL PARA CADA PRODUCTO
 @Composable
 fun ProductItem(product: ProductPlaceholder) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        // IMAGEN EN BLANCO CON FORMATO ESTRICTO
-        Surface(
-            modifier = Modifier
-                .size(130.dp)
-                .padding(4.dp),
-            shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFF5F5F5), // GRIS MUY CLARO (PLACEHOLDER)
-            border = BorderStroke(1.dp, Color(0xFFEEEEEE))
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ESPACIO VACÍO PARA CUMPLIR CON LA FOTO EN BLANCO
+            Surface(
+                modifier = Modifier.size(130.dp).padding(4.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant, // GRIS ADAPTATIVO
+                border = BorderStroke(1.dp, Color.LightGray)
+            ) { }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = product.name,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "$ ${product.price}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF5877FF) // MANTENEMOS TU AZUL DE MARCA
+            )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = product.name,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "$ ${product.price}",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF5877FF)
-        )
     }
 }
