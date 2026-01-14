@@ -11,52 +11,59 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.therealprijectlevelup.data.SettingsStore
 import com.example.therealprijectlevelup.ui.theme.TheRealPrijectLevelUpTheme
-import com.example.therealprijectlevelup.views.CartView
-import com.example.therealprijectlevelup.views.HomeView
-import com.example.therealprijectlevelup.views.ProfileView
-import com.example.therealprijectlevelup.views.CustomerServiceView
-// IMPORTANTE: ASEGÚRATE DE IMPORTAR TU VIEWMODEL
-import com.example.therealprijectlevelup.viewModels.SettingsViewModel
+import com.example.therealprijectlevelup.viewModels.*
+import com.example.therealprijectlevelup.views.*
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            val context = LocalContext.current
 
-            // 1. INICIALIZAMOS EL STORE Y EL VIEWMODEL
-            // USAMOS REMEMBER PARA QUE EL VIEWMODEL PERSISTA DURANTE RECOMPOSICIONES
+        setContent {
+
+            val context = LocalContext.current
             val settingsStore = remember { SettingsStore(context) }
             val settingsViewModel = remember { SettingsViewModel(settingsStore) }
 
-            // 2. OBSERVAMOS EL MODO OSCURO DESDE EL VIEWMODEL (ESTO ES MÁS LIMPIO)
-            val darkModeActive by settingsViewModel.isDarkMode.collectAsState()
+            val darkMode by settingsViewModel.isDarkMode.collectAsState()
 
-            TheRealPrijectLevelUpTheme(darkTheme = darkModeActive) {
-                var currentScreen by rememberSaveable { mutableStateOf("home") }
+            val homeViewModel: HomeViewModel = viewModel()
+            val cartViewModel: CartViewModel = viewModel()
+            val chatViewModel: ChatViewModel = viewModel()
 
+            var currentScreen by rememberSaveable { mutableStateOf("home") }
+
+            TheRealPrijectLevelUpTheme(darkTheme = darkMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 3. PASAMOS EL VIEWMODEL A CADA VISTA PARA SOLUCIONAR EL ERROR
+
                     when (currentScreen) {
+
                         "home" -> HomeView(
                             onNavigate = { currentScreen = it },
-                            viewModel = settingsViewModel
+                            homeViewModel = homeViewModel,
+                            settingsViewModel = settingsViewModel
                         )
-                        "profile" -> ProfileView(
-                            onNavigate = { currentScreen = it },
-                            viewModel = settingsViewModel
-                        )
+
                         "cart" -> CartView(
                             onNavigate = { currentScreen = it },
-                            viewModel = settingsViewModel
+                            settingsViewModel = settingsViewModel,
+                            cartViewModel = cartViewModel
                         )
-                        "messages" -> CustomerServiceView(
+
+                        "messages" -> ChatView(
+                            onNavigate = { currentScreen = it },
+                            settingsViewModel = settingsViewModel,
+                            chatViewModel = chatViewModel
+                        )
+
+                        "profile" -> ProfileView(
                             onNavigate = { currentScreen = it },
                             viewModel = settingsViewModel
                         )

@@ -2,7 +2,10 @@ package com.example.therealprijectlevelup.viewModels
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.therealprijectlevelup.models.User
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {
 
@@ -10,16 +13,22 @@ class RegisterViewModel : ViewModel() {
     var registerResult = mutableStateOf("")
 
     fun register() {
-        val u = user.value
+        viewModelScope.launch {
+            registerResult.value = "Registrando..."
 
-        registerResult.value = when {
-            u.email.isBlank() || u.username.isBlank() ->
-                "Datos incompletos"
+            delay(1500)
 
-            u.password.length < 6 ->
-                "Contraseña muy corta"
+            val u = user.value
+            registerResult.value = when {
+                u.email.isBlank() || u.username.isBlank() ->
+                    "Datos incompletos"
 
-            else -> "SUCCESS"
+                u.password.length < 6 ->
+                    "Contraseña muy corta"
+
+                else -> "SUCCESS"
+            }
         }
     }
 }
+

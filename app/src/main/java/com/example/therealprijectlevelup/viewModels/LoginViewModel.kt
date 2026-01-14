@@ -2,6 +2,9 @@ package com.example.therealprijectlevelup.viewModels
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
 
@@ -11,14 +14,21 @@ class LoginViewModel : ViewModel() {
     var loginResult = mutableStateOf("")
 
     fun login() {
-        loginResult.value = when {
-            username.value.isBlank() || password.value.isBlank() ->
-                "Campos vacíos"
+        viewModelScope.launch {
+            loginResult.value = "Cargando..."
 
-            username.value == "Renato416" && password.value == "123456" ->
-                "SUCCESS"
+            delay(1200) // Simula backend
 
-            else -> "Credenciales incorrectas"
+            loginResult.value = when {
+                username.value.isBlank() || password.value.isBlank() ->
+                    "Campos vacíos"
+
+                username.value == "Renato416" && password.value == "123456" ->
+                    "SUCCESS"
+
+                else -> "Credenciales incorrectas"
+            }
         }
     }
 }
+

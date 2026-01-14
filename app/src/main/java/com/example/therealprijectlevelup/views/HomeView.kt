@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.therealprijectlevelup.models.Product
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
@@ -22,25 +21,18 @@ import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 @Composable
 fun HomeView(
     onNavigate: (String) -> Unit,
-    homeViewModel: HomeViewModel = viewModel(),
-    settingsViewModel: SettingsViewModel = viewModel()
+    homeViewModel: HomeViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
     val products = homeViewModel.products.value
 
     Scaffold(
         topBar = {
-            LevelUpHeader(
-                title = "Level UP",
-                viewModel = settingsViewModel
-            )
+            LevelUpHeader("Level UP", settingsViewModel)
         },
         bottomBar = {
-            LevelUpBottomNavigation(
-                selectedTab = "home",
-                onTabSelected = onNavigate
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+            LevelUpBottomNavigation("home", onNavigate)
+        }
     ) { paddingValues ->
 
         LazyVerticalGrid(
@@ -53,7 +45,7 @@ fun HomeView(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(products) { product ->
-                ProductItem(product = product)
+                ProductItem(product)
             }
         }
     }
@@ -64,9 +56,6 @@ fun ProductItem(product: Product) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(
@@ -75,28 +64,20 @@ fun ProductItem(product: Product) {
         ) {
 
             Surface(
-                modifier = Modifier
-                    .size(130.dp)
-                    .padding(4.dp),
+                modifier = Modifier.size(130.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(1.dp, Color.LightGray)
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {}
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = product.name,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                fontWeight = FontWeight.Medium
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "$ ${product.price}",
-                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF5877FF)
             )
