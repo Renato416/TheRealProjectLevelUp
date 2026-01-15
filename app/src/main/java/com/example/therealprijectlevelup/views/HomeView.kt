@@ -1,20 +1,32 @@
 package com.example.therealprijectlevelup.views
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.example.therealprijectlevelup.models.Product
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeView(
@@ -31,10 +44,48 @@ fun HomeView(
 ) {
     val products = homeViewModel.products.value
 
+    // 1. ESTADO DEL SCROLL
+    val listState = rememberLazyGridState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // 2. CONTROL DE FOCO PARA EL BUSCADOR
+    val searchFocusRequester = remember { FocusRequester() }
+
+    // 3. LÓGICA: MOSTRAR BOTÓN SI EL HEADER YA NO SE VE (INDEX > 0)
+    val showFloatingButton by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            LevelUpHeader("Level UP", settingsViewModel)
+
+        // ¡IMPORTANTE! ELIMINAMOS EL topBar DE AQUÍ PARA QUE EL HEADER PUEDA SCROLLEAR
+        // topBar = { LevelUpHeader(...) }, <-- ESTO YA NO VA AQUÍ
+
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = showFloatingButton,
+                enter = fadeIn() + slideInVertically { it },
+                exit = fadeOut() + slideOutVertically { it }
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            // A. VOLVER ARRIBA SUAVEMENTE
+                            listState.animateScrollToItem(0)
+                            // B. ACTIVAR EL TECLADO EN EL BUSCADOR
+                            searchFocusRequester.requestFocus()
+                        }
+                    },
+                    containerColor = Color(0xFF5877FF),
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar")
+                }
+            }
         },
         bottomBar = {
             LevelUpBottomNavigation("home", onNavigate)
@@ -42,21 +93,44 @@ fun HomeView(
     ) { paddingValues ->
 
         LazyVerticalGrid(
+            state = listState, // CONECTAMOS EL ESTADO
             columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(bottom = paddingValues.calculateBottomPadding()) // SOLO PADDING ABAJO
+            // QUITAMOS EL PADDING TOP PORQUE EL HEADER AHORA ES PARTE DE LA LISTA
+            ,
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // --- AQUÍ ESTÁ EL TRUCO ---
+            // PONEMOS EL HEADER COMO EL PRIMER ITEM DE LA LISTA
+            item(span = { GridItemSpan(2) }) {
+                LevelUpHeader(
+                    title = "Level UP",
+                    viewModel = settingsViewModel,
+                    searchFocusRequester = searchFocusRequester // PASAMOS EL CONTROL
+                )
+            }
+            // --------------------------
+
+            // LUEGO LOS PRODUCTOS NORMALMENTE (CON MARGEN A LOS LADOS)
             items(products) { product ->
-                ProductItem(product)
+                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    ProductItem(product)
+                }
+            }
+
+            // ESPACIO FINAL PARA QUE EL BOTÓN NO TAPE EL ÚLTIMO PRODUCTO
+            item(span = { GridItemSpan(2) }) {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
 }
 
+// TU COMPONENTE PRODUCTITEM SE MANTIENE IGUAL QUE ANTES (CON EL FIX DEL COLOR BLANCO)
 @Composable
 fun ProductItem(product: Product) {
     var visible by remember { mutableStateOf(false) }
@@ -78,10 +152,8 @@ fun ProductItem(product: Product) {
                 scaleY = scale
                 alpha = scale
             },
-        // MANTENEMOS EL BORDE ADAPTABLE PARA QUE SE VEA BIEN EN AMBOS MODOS
         border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant),
         colors = CardDefaults.cardColors(
-            // CAMBIO 1: FONDO SIEMPRE BLANCO PARA COMBINAR CON LA IMAGEN JPEG
             containerColor = Color.White
         ),
         shape = RoundedCornerShape(16.dp),
@@ -94,7 +166,6 @@ fun ProductItem(product: Product) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // IMAGEN DEL PRODUCTO
             Image(
                 painter = painterResource(id = product.imageRes),
                 contentDescription = product.name,
@@ -106,31 +177,26 @@ fun ProductItem(product: Product) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // NOMBRE DEL PRODUCTO
             Text(
                 text = product.name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Normal,
-                // CAMBIO 2: TEXTO SIEMPRE NEGRO (PARA QUE SE VEA SOBRE BLANCO)
                 color = Color.Black,
                 fontSize = 20.sp
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // PRECIO DEL PRODUCTO
             Text(
                 text = "$ ${product.price}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Normal,
-                // CAMBIO 3: TEXTO SIEMPRE NEGRO
                 color = Color.Black,
                 fontSize = 22.sp
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // BOTÓN COMPRAR
             Button(
                 onClick = { /* LÓGICA DE COMPRA */ },
                 colors = ButtonDefaults.buttonColors(

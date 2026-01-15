@@ -4,15 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode // IMPORTANTE: ICONO LUNA
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.WbSunny // IMPORTANTE: ICONO SOL
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester // IMPORTANTE
+import androidx.compose.ui.focus.focusRequester // IMPORTANTE
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,14 +25,16 @@ import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 @Composable
 fun LevelUpHeader(
     title: String,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
+    // AGREGAMOS ESTO PARA PODER ACTIVAR EL BUSCADOR DESDE FUERA
+    searchFocusRequester: FocusRequester? = null
 ) {
     val isDark by viewModel.isDarkMode.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF5877FF)) // AZUL DE MARCA
+            .background(Color(0xFF5877FF))
             .padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         Row(
@@ -57,7 +61,9 @@ fun LevelUpHeader(
                 onValueChange = {},
                 modifier = Modifier
                     .weight(1f)
-                    .height(50.dp),
+                    .height(50.dp)
+                    // AQUÍ VINCULAMOS EL CONTROL DE FOCO SI EXISTE
+                    .then(if (searchFocusRequester != null) Modifier.focusRequester(searchFocusRequester) else Modifier),
                 placeholder = {
                     Text(
                         "Buscar...",
@@ -83,24 +89,19 @@ fun LevelUpHeader(
                 )
             )
 
-            // --- AQUÍ ESTÁ EL CAMBIO SOLICITADO ---
             IconButton(
                 onClick = {
                     viewModel.toggleDarkMode(!isDark)
                 },
-                modifier = Modifier
-                    .size(50.dp) // TAMAÑO PARA QUE QUEDE ALINEADO CON LA BARRA
-                // OPCIONAL: FONDO CIRCULAR SUTIL SI LO QUIERES
-                // .background(Color.Black.copy(alpha = 0.1f), CircleShape)
+                modifier = Modifier.size(50.dp)
             ) {
-                // LÓGICA VISUAL:
-                // SI ESTÁ OSCURO (isDark = true) -> MOSTRAMOS SOL (WbSunny)
-                // SI ESTÁ CLARO (isDark = false) -> MOSTRAMOS LUNA (DarkMode)
+                // AQUÍ VA TU LÓGICA DE ICONOS QUE YA ARREGLASTE (SOL/LUNA O ESTRELLA/CARA)
+                // PUSE ESTOS POR DEFECTO, USA LOS QUE YA TENGAS FUNCIONANDO
                 Icon(
                     imageVector = if (isDark) Icons.Default.WbSunny else Icons.Default.DarkMode,
                     contentDescription = "Cambiar Tema",
-                    tint = Color.White, // ICONO BLANCO SOBRE FONDO AZUL
-                    modifier = Modifier.size(32.dp) // TAMAÑO DEL ICONO INTERNO
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }
