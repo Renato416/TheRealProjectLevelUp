@@ -25,6 +25,9 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel()
 ) {
     val user = viewModel.user.value
+    // OBTENEMOS EL VALOR DE LA CONFIRMACIÓN DEL VIEWMODEL
+    val confirmPassword = viewModel.confirmPassword.value
+
     val blueColor = Color(0xFF5877FF)
     val roundedShape = RoundedCornerShape(12.dp)
     val scrollState = rememberScrollState()
@@ -33,12 +36,11 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
-            .verticalScroll(scrollState), // PERMITE SCROLL SI LA PANTALLA ES PEQUEÑA
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        // HEADER REUTILIZADO
         SimpleHeader(title = "Registrarse")
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -65,7 +67,7 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: DIRECCIÓN (CON ICONO)
+        // CAMPO: DIRECCIÓN
         OutlinedTextField(
             value = user.address,
             onValueChange = { viewModel.user.value = user.copy(address = it) },
@@ -77,12 +79,12 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: EDAD/FECHA (CON PLACEHOLDER E ICONO)
+        // CAMPO: FECHA
         OutlinedTextField(
             value = user.birthDate,
             onValueChange = { viewModel.user.value = user.copy(birthDate = it) },
-            label = { Text("Ingresar edad") },
-            placeholder = { Text("dd - mm - aaaa") }, // FORMATO COMO PLACEHOLDER
+            label = { Text("Ingresar fecha de nacimiento") },
+            placeholder = { Text("dd - mm - aaaa") },
             modifier = Modifier.fillMaxWidth(),
             shape = roundedShape,
             trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
@@ -105,6 +107,19 @@ fun RegisterScreen(
         OutlinedTextField(
             value = user.password,
             onValueChange = { viewModel.user.value = user.copy(password = it) },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth(),
+            shape = roundedShape,
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // CAMPO: CONFIRMAR CONTRASEÑA (NUEVO)
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { viewModel.confirmPassword.value = it },
             label = { Text("Confirmar Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
@@ -139,7 +154,6 @@ fun RegisterScreen(
             )
         }
 
-        // NAVEGACIÓN AUTOMÁTICA AL ÉXITO
         if (viewModel.registerResult.value == "SUCCESS") {
             LaunchedEffect(Unit) {
                 onBack()
