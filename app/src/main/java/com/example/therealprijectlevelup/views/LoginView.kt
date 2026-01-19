@@ -17,10 +17,19 @@ import com.example.therealprijectlevelup.viewModels.LoginViewModel
 @Composable
 fun LoginScreen(
     onRegisterClick: () -> Unit,
+    onLoginSuccess: () -> Unit, // 1. NUEVO PARÁMETRO PARA NAVEGAR AL HOME
     viewModel: LoginViewModel = viewModel()
 ) {
-    val blueColor = Color(0xFF5877FF) // COLOR AZUL DE MARCA
-    val roundedShape = RoundedCornerShape(12.dp) // BORDES REDONDEADOS COMUNES
+    val blueColor = Color(0xFF5877FF)
+    val roundedShape = RoundedCornerShape(12.dp)
+
+    // 2. OBSERVAMOS EL ESTADO DEL LOGIN
+    // Si el estado cambia a "SUCCESS", ejecutamos onLoginSuccess()
+    if (viewModel.loginResult.value == "SUCCESS") {
+        LaunchedEffect(Unit) {
+            onLoginSuccess()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -30,12 +39,10 @@ fun LoginScreen(
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        // HEADER: LOGO Y TÍTULO
         SimpleHeader(title = "Inicio de sesión")
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // CAMPO: NOMBRE DE USUARIO
         OutlinedTextField(
             value = viewModel.username.value,
             onValueChange = { viewModel.username.value = it },
@@ -47,7 +54,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: CONTRASEÑA
         OutlinedTextField(
             value = viewModel.password.value,
             onValueChange = { viewModel.password.value = it },
@@ -58,7 +64,6 @@ fun LoginScreen(
             singleLine = true
         )
 
-        // ENLACE: ¿OLVIDASTE TU CONTRASEÑA?
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterEnd
@@ -74,7 +79,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOTÓN: INGRESAR
         Button(
             onClick = { viewModel.login() },
             modifier = Modifier
@@ -89,7 +93,6 @@ fun LoginScreen(
             Text("Ingresar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
-        // MENSAJE DE ERROR/CARGA
         if (viewModel.loginResult.value.isNotEmpty() && viewModel.loginResult.value != "SUCCESS") {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -99,9 +102,8 @@ fun LoginScreen(
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f)) // EMPUJA EL CONTENIDO INFERIOR HACIA ABAJO
+        Spacer(modifier = Modifier.weight(1f))
 
-        // SECCIÓN: CREAR CUENTA
         Text(
             text = "¿No eres miembro?",
             fontSize = 14.sp,
@@ -125,11 +127,9 @@ fun LoginScreen(
     }
 }
 
-// COMPONENTE REUTILIZABLE PARA EL HEADER SIMPLE
 @Composable
 fun SimpleHeader(title: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // SIMULACIÓN DEL LOGO "LevelUP" CON COLORES
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Level UP",
@@ -137,7 +137,6 @@ fun SimpleHeader(title: String) {
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.Black
             )
-
         }
         Text(
             text = title,

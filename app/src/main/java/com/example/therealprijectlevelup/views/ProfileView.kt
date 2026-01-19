@@ -11,9 +11,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +29,11 @@ fun ProfileView(
     profileViewModel: ProfileViewModel
 ) {
     val userProfile by profileViewModel.userProfile.collectAsState()
+
+    // -----------------------------------------------------------
+    // CAMBIO REALIZADO: SE ELIMINÓ EL LAUNCHED EFFECT AUTOMÁTICO
+    // Y LA VARIABLE sessionEmail. AHORA EL CONTROL ES MANUAL.
+    // -----------------------------------------------------------
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -64,7 +67,7 @@ fun ProfileView(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // 1. ICONO DE PERFIL CIRCULAR
+                    // ICONO DE PERFIL
                     Surface(
                         modifier = Modifier.size(100.dp),
                         shape = CircleShape,
@@ -82,7 +85,7 @@ fun ProfileView(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 2. NOMBRE DE USUARIO
+                    // NOMBRE DE USUARIO
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
@@ -104,7 +107,6 @@ fun ProfileView(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 3. CAMPOS DE INFORMACIÓN
                     ProfileField(
                         label = "Dirección",
                         value = userProfile.address,
@@ -134,7 +136,6 @@ fun ProfileView(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // LINK DE AYUDA
                     TextButton(onClick = { /* ACCIÓN AYUDA */ }) {
                         Text(
                             text = "¿Necesito ayuda?",
@@ -150,7 +151,9 @@ fun ProfileView(
             // BOTÓN CERRAR SESIÓN
             Button(
                 onClick = {
-                    viewModel.logout()
+                    // CAMBIO AQUÍ: ORDEN EXPLÍCITO
+                    viewModel.logout()    // 1. Borramos datos
+                    onNavigate("login")   // 2. Nos vamos manualmente
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -175,11 +178,7 @@ fun ProfileView(
 
 // COMPONENTE REUTILIZABLE (SIN CAMBIOS)
 @Composable
-fun ProfileField(
-    label: String,
-    value: String,
-    icon: ImageVector? = null
-) {
+fun ProfileField(label: String, value: String, icon: ImageVector? = null) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = label,
@@ -190,13 +189,11 @@ fun ProfileField(
 
         OutlinedTextField(
             value = value,
-            onValueChange = {}, // READ ONLY
+            onValueChange = {},
             readOnly = true,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            trailingIcon = if (icon != null) {
-                { Icon(icon, contentDescription = null) }
-            } else null,
+            trailingIcon = if (icon != null) { { Icon(icon, contentDescription = null) } } else null,
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.Transparent,
                 focusedContainerColor = Color.Transparent,
