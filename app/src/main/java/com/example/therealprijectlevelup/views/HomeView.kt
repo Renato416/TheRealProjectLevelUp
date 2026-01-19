@@ -26,7 +26,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +60,6 @@ fun HomeView(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
 
-
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showFloatingButton,
@@ -95,8 +93,7 @@ fun HomeView(
             columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding()) // SOLO PADDING ABAJO
-            ,
+                .padding(bottom = paddingValues.calculateBottomPadding()), // SOLO PADDING ABAJO
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -112,7 +109,14 @@ fun HomeView(
 
             items(products) { product ->
                 Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-                    ProductItem(product)
+                    // AQUÍ ESTÁ EL CAMBIO PRINCIPAL: PASAMOS LA NAVEGACIÓN
+                    ProductItem(
+                        product = product,
+                        onClick = {
+                            // Navegamos a la ruta de detalle pasando el ID del producto
+                            onNavigate("detail/${product.id}")
+                        }
+                    )
                 }
             }
 
@@ -123,8 +127,12 @@ fun HomeView(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductItem(product: Product) {
+fun ProductItem(
+    product: Product,
+    onClick: () -> Unit // NUEVO PARÁMETRO
+) {
     var visible by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
@@ -137,6 +145,7 @@ fun ProductItem(product: Product) {
     }
 
     Card(
+        onClick = onClick, // HABILITAMOS EL CLICK EN LA TARJETA
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -190,7 +199,7 @@ fun ProductItem(product: Product) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* LÓGICA DE COMPRA */ },
+                onClick = onClick, // TAMBIÉN HABILITAMOS CLICK EN EL BOTÓN
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF5877FF),
                     contentColor = Color.White

@@ -4,9 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.therealprijectlevelup.viewModels.*
 import com.example.therealprijectlevelup.views.*
 
@@ -59,7 +61,19 @@ fun NavManager(
                 settingsViewModel = settingsViewModel
             )
         }
+        composable(
+            route = "detail/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: 0
 
+            ProductDetailView(
+                productId = id,
+                homeViewModel = homeViewModel,
+                settingsViewModel = settingsViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable("cart") {
             CartView(
                 onNavigate = { route -> navController.navigate(route) },
