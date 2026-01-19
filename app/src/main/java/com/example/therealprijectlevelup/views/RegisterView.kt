@@ -33,17 +33,17 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
-            .verticalScroll(scrollState), // PERMITE SCROLL SI LA PANTALLA ES PEQUEÑA
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(40.dp))
 
-        // HEADER REUTILIZADO
+        // HEADER
         SimpleHeader(title = "Registrarse")
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // CAMPO: CORREO
+        // CAMPO 1: CORREO (Usa Label)
         OutlinedTextField(
             value = user.email,
             onValueChange = { viewModel.user.value = user.copy(email = it) },
@@ -54,7 +54,7 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: NOMBRE DE USUARIO
+        // CAMPO 2: USUARIO (Usa Label)
         OutlinedTextField(
             value = user.username,
             onValueChange = { viewModel.user.value = user.copy(username = it) },
@@ -65,7 +65,7 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: DIRECCIÓN (CON ICONO)
+        // CAMPO 3: DIRECCIÓN (Usa Label + Icono)
         OutlinedTextField(
             value = user.address,
             onValueChange = { viewModel.user.value = user.copy(address = it) },
@@ -77,12 +77,13 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: EDAD/FECHA (CON PLACEHOLDER E ICONO)
+        // CAMPO 4: FECHA (Usa Label + Placeholder + Icono)
+        // El Label va al borde, el Placeholder se queda dentro como ejemplo
         OutlinedTextField(
             value = user.birthDate,
             onValueChange = { viewModel.user.value = user.copy(birthDate = it) },
-            label = { Text("Ingresar edad") },
-            placeholder = { Text("dd - mm - aaaa") }, // FORMATO COMO PLACEHOLDER
+            label = { Text("Ingresar fecha de nacimiento") },
+            placeholder = { Text("dd - mm - aaaa") },
             modifier = Modifier.fillMaxWidth(),
             shape = roundedShape,
             trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
@@ -90,22 +91,22 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: TELÉFONO
+        // CAMPO 5: TELÉFONO (Corregido para asegurar formato Label)
         OutlinedTextField(
             value = user.phone,
             onValueChange = { viewModel.user.value = user.copy(phone = it) },
-            label = { Text("Ingresar numero de telefono") },
+            label = { Text("Ingresar numero de telefono") }, // Label asegura texto en el borde
             modifier = Modifier.fillMaxWidth(),
             shape = roundedShape,
             singleLine = true
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CAMPO: CONTRASEÑA
+        // CAMPO 6: CONTRASEÑA (Texto actualizado y formato Label)
         OutlinedTextField(
             value = user.password,
             onValueChange = { viewModel.user.value = user.copy(password = it) },
-            label = { Text("Confirmar Contraseña") },
+            label = { Text("Contraseña") }, // CAMBIO REALIZADO AQUÍ
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             shape = roundedShape,
@@ -114,7 +115,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // BOTÓN: REGISTRAR
+        // BOTÓN REGISTRAR
         Button(
             onClick = { viewModel.register() },
             modifier = Modifier
@@ -139,7 +140,7 @@ fun RegisterScreen(
             )
         }
 
-        // NAVEGACIÓN AUTOMÁTICA AL ÉXITO
+        // NAVEGACIÓN ÉXITO
         if (viewModel.registerResult.value == "SUCCESS") {
             LaunchedEffect(Unit) {
                 onBack()
