@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Navi
     implementation(libs.navigation.fragment)

@@ -1,10 +1,10 @@
 package com.example.therealprijectlevelup.models
 
 data class Product(
-    val id: Int,
-    val name: String,
-    val price: String,
-    val imageRes: Int,
-    val description: String = "Descripción no disponible.", // Valor por defecto
-    val rating: Double = 4.5 // Valor por defecto
+    val id: Long? = null,
+    val name: String = "",
+    val price: Long = 0L,
+    val imageName: String = "", // URL de imagen
+    val description: String = "",
+    val rating: Double = 0.0
 )
