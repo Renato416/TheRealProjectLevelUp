@@ -32,7 +32,13 @@ fun CartView(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { LevelUpHeader("Level UP", settingsViewModel) },
+        topBar = {
+            LevelUpHeader(
+                title = "Carrito",
+                viewModel = settingsViewModel,
+                onSearchClick = { onNavigate("search") } // REDIRECCIÓN A BÚSQUEDA
+            )
+        },
         bottomBar = { LevelUpBottomNavigation("cart", onNavigate) }
     ) { paddingValues ->
 
@@ -54,7 +60,7 @@ fun CartView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // SECCIÓN INFERIOR: TOTAL (ESTA SÍ SE MANTIENE ADAPTABLE AL TEMA)
+            // SECCIÓN INFERIOR: TOTAL
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

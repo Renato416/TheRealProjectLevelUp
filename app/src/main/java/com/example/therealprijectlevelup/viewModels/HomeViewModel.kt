@@ -12,13 +12,38 @@ class HomeViewModel : ViewModel() {
 
     val products = mutableStateOf<List<Product>>(emptyList())
 
+    // 1. ESTADO DE CARGA
+    var isLoading = mutableStateOf(false)
+
+    // TEXTO DEL BUSCADOR (Lo mantenemos para la búsqueda)
+    var searchText = mutableStateOf("")
+
+    // BANDERA PARA FOCO
+    var focusSearchOnEntry = mutableStateOf(false)
+
     init {
         loadProducts()
     }
 
+    // FILTRO DE BÚSQUEDA
+    val filteredProducts: List<Product>
+        get() {
+            val query = searchText.value
+            return if (query.isEmpty()) {
+                products.value
+            } else {
+                products.value.filter {
+                    it.name.contains(query, ignoreCase = true)
+                }
+            }
+        }
+
     private fun loadProducts() {
         viewModelScope.launch {
-            delay(1000)
+            // 2. INDICAMOS QUE ESTÁ CARGANDO
+            isLoading.value = true
+
+            delay(1000) // Simulamos espera de red
 
             products.value = listOf(
                 Product(
@@ -46,10 +71,12 @@ class HomeViewModel : ViewModel() {
                     "Sensor óptico de alta precisión hasta 16000 DPI. Botones programables."
                 )
             )
+
+            // 3. TERMINÓ DE CARGAR
+            isLoading.value = false
         }
     }
 
-    // FUNCIÓN PARA BUSCAR UN PRODUCTO POR ID
     fun getProductById(id: Int): Product? {
         return products.value.find { it.id == id }
     }

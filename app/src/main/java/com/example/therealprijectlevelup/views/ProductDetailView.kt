@@ -29,7 +29,8 @@ fun ProductDetailView(
     productId: Int,
     homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigate: (String) -> Unit // 1. AGREGAMOS ESTE PARÁMETRO
 ) {
     // BUSCAMOS EL PRODUCTO USANDO EL ID
     val product = homeViewModel.getProductById(productId)
@@ -38,7 +39,12 @@ fun ProductDetailView(
         topBar = {
             // HEADER PERSONALIZADO CON BOTÓN ATRÁS
             Column {
-                LevelUpHeader(title = "Level UP", viewModel = settingsViewModel)
+                LevelUpHeader(
+                    title = "Level UP",
+                    viewModel = settingsViewModel,
+                    // 2. CONECTAMOS EL BOTÓN DE BÚSQUEDA
+                    onSearchClick = { onNavigate("search") }
+                )
                 // Barra secundaria pequeña para volver
                 Box(
                     modifier = Modifier

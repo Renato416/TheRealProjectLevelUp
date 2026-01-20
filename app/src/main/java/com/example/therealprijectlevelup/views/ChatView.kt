@@ -33,8 +33,9 @@ fun ChatView(
     Scaffold(
         topBar = {
             LevelUpHeader(
-                title = "Level UP",
-                viewModel = settingsViewModel
+                title = "Soporte",
+                viewModel = settingsViewModel,
+                onSearchClick = { onNavigate("search") } // REDIRECCIÓN A BÚSQUEDA
             )
         },
         bottomBar = {

@@ -23,25 +23,17 @@ fun NavManager(
     profileViewModel: ProfileViewModel
 ) {
     val navController = rememberNavController()
-
-    // Verificamos sesión para decidir inicio
     val userSession by settingsViewModel.userEmail.collectAsState()
     val startNode = if (userSession.isNotEmpty()) "home" else "login"
 
     NavHost(navController = navController, startDestination = startNode) {
 
         composable("login") {
-            // Aseguramos limpieza al entrar (Doble seguridad)
-            LaunchedEffect(Unit) {
-                loginViewModel.loginResult.value = ""
-            }
-
+            LaunchedEffect(Unit) { loginViewModel.loginResult.value = "" }
             LoginScreen(
                 onRegisterClick = { navController.navigate("register") },
                 onLoginSuccess = {
-                    navController.navigate("home") {
-                        popUpTo("login") { inclusive = true }
-                    }
+                    navController.navigate("home") { popUpTo("login") { inclusive = true } }
                 },
                 viewModel = loginViewModel
             )
@@ -61,19 +53,30 @@ fun NavManager(
                 settingsViewModel = settingsViewModel
             )
         }
+
+        // NUEVA RUTA DE BÚSQUEDA
+        composable("search") {
+            SearchProductView(
+                onNavigate = { route -> navController.navigate(route) },
+                onBack = { navController.popBackStack() },
+                homeViewModel = homeViewModel
+            )
+        }
+
         composable(
             route = "detail/{id}",
             arguments = listOf(navArgument("id") { type = NavType.IntType })
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt("id") ?: 0
-
             ProductDetailView(
                 productId = id,
                 homeViewModel = homeViewModel,
                 settingsViewModel = settingsViewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onNavigate = { route -> navController.navigate(route) }
             )
         }
+
         composable("cart") {
             CartView(
                 onNavigate = { route -> navController.navigate(route) },
@@ -90,20 +93,14 @@ fun NavManager(
             )
         }
 
-        // --- AQUÍ ESTÁ EL ARREGLO DEL REBOTE ---
         composable("profile") {
             ProfileView(
                 onNavigate = { route ->
                     if (route == "login") {
-                        // 1. MATAMOS AL ZOMBIE: Limpiamos el estado "SUCCESS" manualmente
                         loginViewModel.loginResult.value = ""
                         loginViewModel.username.value = ""
                         loginViewModel.password.value = ""
-
-                        // 2. Ahora sí navegamos seguros al login
-                        navController.navigate("login") {
-                            popUpTo(0) // Borra todo el historial para que no puedan volver
-                        }
+                        navController.navigate("login") { popUpTo(0) }
                     } else {
                         navController.navigate(route)
                     }

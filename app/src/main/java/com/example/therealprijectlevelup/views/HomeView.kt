@@ -1,11 +1,7 @@
 package com.example.therealprijectlevelup.views
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -22,7 +18,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -41,25 +36,21 @@ fun HomeView(
     homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    val products = homeViewModel.products.value
+    // 1. OBTENEMOS EL ESTADO DE CARGA
+    val isLoading = homeViewModel.isLoading.value
+    // 2. USAMOS LA LISTA FILTRADA (Por consistencia, aunque en Home se ve todo)
+    val products = homeViewModel.filteredProducts
 
-    // 1. ESTADO DEL SCROLL
     val listState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
-    // 2. CONTROL DE FOCO PARA EL BUSCADOR
-    val searchFocusRequester = remember { FocusRequester() }
-
-    // 3. LÓGICA: MOSTRAR BOTÓN SI EL HEADER YA NO SE VE (INDEX > 0)
+    // Mostramos el botón si bajamos un poco (primer item ya no es visible)
     val showFloatingButton by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex > 0
-        }
+        derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-
         floatingActionButton = {
             AnimatedVisibility(
                 visible = showFloatingButton,
@@ -69,16 +60,17 @@ fun HomeView(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            // A. VOLVER ARRIBA SUAVEMENTE
+                            // A. Volver arriba suavemente
                             listState.animateScrollToItem(0)
-                            // B. ACTIVAR EL TECLADO EN EL BUSCADOR
-                            searchFocusRequester.requestFocus()
+                            // B. ¡AQUÍ ESTÁ LA CORRECCIÓN! Navegar a la búsqueda
+                            onNavigate("search")
                         }
                     },
                     containerColor = Color(0xFF5877FF),
                     contentColor = Color.White,
                     shape = CircleShape
                 ) {
+                    // Mantenemos la Lupa porque la acción principal es BUSCAR
                     Icon(Icons.Default.Search, contentDescription = "Buscar")
                 }
             }
@@ -88,40 +80,57 @@ fun HomeView(
         }
     ) { paddingValues ->
 
-        LazyVerticalGrid(
-            state = listState, // CONECTAMOS EL ESTADO
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding()), // SOLO PADDING ABAJO
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-
-            item(span = { GridItemSpan(2) }) {
-                LevelUpHeader(
-                    title = "Level UP",
-                    viewModel = settingsViewModel,
-                    searchFocusRequester = searchFocusRequester // PASAMOS EL CONTROL
-                )
+        if (isLoading) {
+            // SPINNER DE CARGA
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color(0xFF5877FF))
             }
-            // --------------------------
+        } else {
+            // LISTA DE PRODUCTOS
+            LazyVerticalGrid(
+                state = listState,
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = paddingValues.calculateBottomPadding()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-            items(products) { product ->
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-                    // AQUÍ ESTÁ EL CAMBIO PRINCIPAL: PASAMOS LA NAVEGACIÓN
-                    ProductItem(
-                        product = product,
-                        onClick = {
-                            // Navegamos a la ruta de detalle pasando el ID del producto
-                            onNavigate("detail/${product.id}")
-                        }
+                item(span = { GridItemSpan(2) }) {
+                    LevelUpHeader(
+                        title = "Level UP",
+                        viewModel = settingsViewModel,
+                        onSearchClick = { onNavigate("search") }
                     )
                 }
-            }
 
-            item(span = { GridItemSpan(2) }) {
-                Spacer(modifier = Modifier.height(80.dp))
+                items(products) { product ->
+                    Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                        ProductItem(
+                            product = product,
+                            onClick = { onNavigate("detail/${product.id}") }
+                        )
+                    }
+                }
+
+                // Si no hay productos (por ejemplo si el filtro quedó sucio)
+                if (products.isEmpty()) {
+                    item(span = { GridItemSpan(2) }) {
+                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                            Text("No se encontraron productos", color = Color.Gray)
+                        }
+                    }
+                }
+
+                item(span = { GridItemSpan(2) }) {
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
             }
         }
     }
@@ -131,7 +140,7 @@ fun HomeView(
 @Composable
 fun ProductItem(
     product: Product,
-    onClick: () -> Unit // NUEVO PARÁMETRO
+    onClick: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -145,7 +154,7 @@ fun ProductItem(
     }
 
     Card(
-        onClick = onClick, // HABILITAMOS EL CLICK EN LA TARJETA
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -183,7 +192,8 @@ fun ProductItem(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Normal,
                 color = Color.Black,
-                fontSize = 20.sp
+                fontSize = 20.sp,
+                maxLines = 1
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -199,7 +209,7 @@ fun ProductItem(
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = onClick, // TAMBIÉN HABILITAMOS CLICK EN EL BOTÓN
+                onClick = onClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF5877FF),
                     contentColor = Color.White

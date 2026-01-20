@@ -2,7 +2,6 @@ package com.example.therealprijectlevelup.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Search
@@ -13,8 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester // IMPORTANTE
-import androidx.compose.ui.focus.focusRequester // IMPORTANTE
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,78 +23,43 @@ import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 fun LevelUpHeader(
     title: String,
     viewModel: SettingsViewModel,
-    searchFocusRequester: FocusRequester? = null
+    onSearchClick: () -> Unit // Solo recibimos la acción de click
 ) {
     val isDark by viewModel.isDarkMode.collectAsState()
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF5877FF))
-            .padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp)
-                    .then(if (searchFocusRequester != null) Modifier.focusRequester(searchFocusRequester) else Modifier),
-                placeholder = {
-                    Text(
-                        "Buscar...",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                trailingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                shape = RoundedCornerShape(12.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent
+        Row {
+            // BOTÓN DE BÚSQUEDA (Lleva a la nueva vista)
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
                 )
-            )
+            }
 
-            IconButton(
-                onClick = {
-                    viewModel.toggleDarkMode(!isDark)
-                },
-                modifier = Modifier.size(50.dp)
-            ) {
+            // BOTÓN DE TEMA
+            IconButton(onClick = { viewModel.toggleDarkMode(!isDark) }) {
                 Icon(
                     imageVector = if (isDark) Icons.Default.WbSunny else Icons.Default.DarkMode,
                     contentDescription = "Cambiar Tema",
                     tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }

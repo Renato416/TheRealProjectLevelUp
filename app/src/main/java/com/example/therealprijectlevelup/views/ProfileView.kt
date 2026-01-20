@@ -30,14 +30,15 @@ fun ProfileView(
 ) {
     val userProfile by profileViewModel.userProfile.collectAsState()
 
-    // -----------------------------------------------------------
-    // CAMBIO REALIZADO: SE ELIMINÓ EL LAUNCHED EFFECT AUTOMÁTICO
-    // Y LA VARIABLE sessionEmail. AHORA EL CONTROL ES MANUAL.
-    // -----------------------------------------------------------
-
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { LevelUpHeader("Level UP", viewModel) },
+        topBar = {
+            LevelUpHeader(
+                title = "Perfil",
+                viewModel = viewModel,
+                onSearchClick = { onNavigate("search") } // REDIRECCIÓN A BÚSQUEDA
+            )
+        },
         bottomBar = { LevelUpBottomNavigation("profile", onNavigate) }
     ) { padding ->
         Column(
@@ -151,9 +152,8 @@ fun ProfileView(
             // BOTÓN CERRAR SESIÓN
             Button(
                 onClick = {
-                    // CAMBIO AQUÍ: ORDEN EXPLÍCITO
-                    viewModel.logout()    // 1. Borramos datos
-                    onNavigate("login")   // 2. Nos vamos manualmente
+                    viewModel.logout()
+                    onNavigate("login")
                 },
                 modifier = Modifier
                     .fillMaxWidth()
