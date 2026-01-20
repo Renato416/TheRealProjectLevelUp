@@ -11,7 +11,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,29 +34,27 @@ fun RegisterScreen(
 ) {
     val user = viewModel.user.value
     val confirmPassword = viewModel.confirmPassword.value
+    val isLoading = viewModel.isLoading.value
+
     val blueColor = Color(0xFF5877FF)
     val roundedShape = RoundedCornerShape(12.dp)
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    // --- VARIABLES DE ESTADO PARA DIRECCIÓN ---
     var selectedRegion by remember { mutableStateOf("") }
     var selectedCommune by remember { mutableStateOf("") }
-
     var regionExpanded by remember { mutableStateOf(false) }
     var communeExpanded by remember { mutableStateOf(false) }
 
-    // Función para actualizar la dirección completa en el ViewModel
     fun updateFullAddress() {
         val fullAddress = if (selectedRegion.isNotEmpty() && selectedCommune.isNotEmpty()) {
             "$selectedCommune, $selectedRegion"
         } else {
             ""
         }
-        viewModel.user.value = user.copy(address = fullAddress)
+        viewModel.user.value = viewModel.user.value.copy(address = fullAddress)
     }
 
-    // Lógica del Calendario
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
@@ -77,15 +74,10 @@ fun RegisterScreen(
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // SE ELIMINÓ EL ROW CON EL BOTÓN DE FLECHA ATRÁS
-
-        Spacer(modifier = Modifier.height(40.dp)) // Espacio superior original
-
+        Spacer(modifier = Modifier.height(40.dp))
         SimpleHeader(title = "Registrarse")
-
         Spacer(modifier = Modifier.height(32.dp))
 
-        // CORREO
         OutlinedTextField(
             value = user.email,
             onValueChange = { viewModel.user.value = user.copy(email = it) },
@@ -96,7 +88,6 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // USUARIO
         OutlinedTextField(
             value = user.username,
             onValueChange = { viewModel.user.value = user.copy(username = it) },
@@ -107,11 +98,7 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ============================================================
-        // --- SECCIÓN DE DIRECCIÓN CHILENA (SOLO REGIÓN Y COMUNA) ---
-        // ============================================================
-
-        // 1. SELECTOR DE REGIÓN
+        // REGIÓN
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = selectedRegion,
@@ -123,7 +110,6 @@ fun RegisterScreen(
                 trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) }
             )
             Box(modifier = Modifier.matchParentSize().clickable { regionExpanded = true })
-
             DropdownMenu(
                 expanded = regionExpanded,
                 onDismissRequest = { regionExpanded = false },
@@ -142,10 +128,9 @@ fun RegisterScreen(
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. SELECTOR DE COMUNA
+        // COMUNA
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = selectedCommune,
@@ -161,7 +146,6 @@ fun RegisterScreen(
             if (selectedRegion.isNotEmpty()) {
                 Box(modifier = Modifier.matchParentSize().clickable { communeExpanded = true })
             }
-
             DropdownMenu(
                 expanded = communeExpanded,
                 onDismissRequest = { communeExpanded = false },
@@ -179,12 +163,8 @@ fun RegisterScreen(
                 }
             }
         }
-
-        // ============================================================
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // FECHA (CALENDARIO)
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = user.birthDate,
@@ -195,14 +175,7 @@ fun RegisterScreen(
                 shape = roundedShape,
                 readOnly = true,
                 enabled = false,
-                trailingIcon = {
-                    Icon(
-                        Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                singleLine = true,
+                trailingIcon = { Icon(Icons.Default.CalendarToday, null) },
                 colors = OutlinedTextFieldDefaults.colors(
                     disabledTextColor = MaterialTheme.colorScheme.onSurface,
                     disabledBorderColor = MaterialTheme.colorScheme.outline,
@@ -213,10 +186,8 @@ fun RegisterScreen(
             )
             Box(modifier = Modifier.matchParentSize().clickable { datePickerDialog.show() })
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // TELÉFONO
         OutlinedTextField(
             value = user.phone,
             onValueChange = { viewModel.user.value = user.copy(phone = it) },
@@ -228,7 +199,6 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CONTRASEÑA
         OutlinedTextField(
             value = user.password,
             onValueChange = { viewModel.user.value = user.copy(password = it) },
@@ -238,10 +208,8 @@ fun RegisterScreen(
             shape = roundedShape,
             singleLine = true
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        // CONFIRMAR CONTRASEÑA
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { viewModel.confirmPassword.value = it },
@@ -251,37 +219,33 @@ fun RegisterScreen(
             shape = roundedShape,
             singleLine = true
         )
-
         Spacer(modifier = Modifier.height(32.dp))
 
-        // REGISTRAR
-        Button(
-            onClick = { viewModel.register() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = blueColor,
-                contentColor = Color.White
-            ),
-            shape = roundedShape
-        ) {
-            Text("Registrar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        // BOTÓN REGISTRAR
+        if (isLoading) {
+            CircularProgressIndicator(color = blueColor)
+        } else {
+            Button(
+                onClick = {
+                    // PASAMOS LA ACCIÓN DE VOLVER
+                    viewModel.register(onSuccess = { onBack() })
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = blueColor, contentColor = Color.White),
+                shape = roundedShape
+            ) {
+                Text("Registrar", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
-        if (viewModel.registerResult.value.isNotEmpty() && viewModel.registerResult.value != "SUCCESS") {
+        // MENSAJE DE ERROR
+        if (viewModel.registerResult.value.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = viewModel.registerResult.value,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp
             )
-        }
-
-        if (viewModel.registerResult.value == "SUCCESS") {
-            LaunchedEffect(Unit) {
-                onBack()
-            }
         }
         Spacer(modifier = Modifier.height(24.dp))
     }

@@ -24,28 +24,43 @@ fun NavManager(
 ) {
     val navController = rememberNavController()
     val userSession by settingsViewModel.userEmail.collectAsState()
+
     val startNode = if (userSession.isNotEmpty()) "home" else "login"
 
     NavHost(navController = navController, startDestination = startNode) {
 
         composable("login") {
             LaunchedEffect(Unit) { loginViewModel.loginResult.value = "" }
+
             LoginScreen(
-                onRegisterClick = { navController.navigate("register") },
+                // --- CAMBIO CRÍTICO AQUÍ ---
+                // Limpiamos ANTES de navegar. Esto garantiza que la variable "SUCCESS"
+                // se borre antes de que la pantalla de registro se cree.
+                onRegisterClick = {
+                    registerViewModel.clean()
+                    navController.navigate("register")
+                },
+                // ---------------------------
                 onLoginSuccess = {
-                    navController.navigate("home") { popUpTo("login") { inclusive = true } }
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                    }
                 },
                 viewModel = loginViewModel
             )
         }
 
         composable("register") {
+            // --- ELIMINA EL LaunchedEffect DE AQUÍ ---
+            // Ya no lo necesitamos porque limpiamos en el click del login.
+
             RegisterScreen(
                 onBack = { navController.popBackStack() },
                 viewModel = registerViewModel
             )
         }
 
+        // ... EL RESTO DE TUS COMPOSABLES (home, search, etc) SIGUEN IGUAL ...
         composable("home") {
             HomeView(
                 onNavigate = { route -> navController.navigate(route) },
@@ -54,7 +69,6 @@ fun NavManager(
             )
         }
 
-        // NUEVA RUTA DE BÚSQUEDA
         composable("search") {
             SearchProductView(
                 onNavigate = { route -> navController.navigate(route) },
@@ -100,7 +114,9 @@ fun NavManager(
                         loginViewModel.loginResult.value = ""
                         loginViewModel.username.value = ""
                         loginViewModel.password.value = ""
-                        navController.navigate("login") { popUpTo(0) }
+                        navController.navigate("login") {
+                            popUpTo(0)
+                        }
                     } else {
                         navController.navigate(route)
                     }

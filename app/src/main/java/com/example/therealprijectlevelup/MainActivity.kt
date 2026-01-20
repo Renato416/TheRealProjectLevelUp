@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
             val homeViewModel = remember { HomeViewModel() }
             val cartViewModel = remember { CartViewModel() }
             val chatViewModel = remember { ChatViewModel() }
-            val profileViewModel = remember { ProfileViewModel() }
+            val profileViewModel = remember { ProfileViewModel(settingsStore) }
 
             val darkModeActive by settingsViewModel.isDarkMode.collectAsState()
 
