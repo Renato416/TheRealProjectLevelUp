@@ -17,14 +17,12 @@ import com.example.therealprijectlevelup.viewModels.LoginViewModel
 @Composable
 fun LoginScreen(
     onRegisterClick: () -> Unit,
-    onLoginSuccess: () -> Unit, // 1. NUEVO PARÁMETRO PARA NAVEGAR AL HOME
+    onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
     val blueColor = Color(0xFF5877FF)
     val roundedShape = RoundedCornerShape(12.dp)
 
-    // 2. OBSERVAMOS EL ESTADO DEL LOGIN
-    // Si el estado cambia a "SUCCESS", ejecutamos onLoginSuccess()
     if (viewModel.loginResult.value == "SUCCESS") {
         LaunchedEffect(Unit) {
             onLoginSuccess()
@@ -107,7 +105,7 @@ fun LoginScreen(
         Text(
             text = "¿No eres miembro?",
             fontSize = 14.sp,
-            color = Color.Gray
+            color = Color.Gray // El gris se ve bien en ambos modos
         )
         Spacer(modifier = Modifier.height(8.dp))
         Button(
@@ -127,6 +125,7 @@ fun LoginScreen(
     }
 }
 
+// --- AQUÍ ESTABA EL PROBLEMA ---
 @Composable
 fun SimpleHeader(title: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -135,14 +134,16 @@ fun SimpleHeader(title: String) {
                 text = "Level UP",
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.Black
+                // CAMBIO: De Color.Black a colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
         Text(
             text = title,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            // CAMBIO: De Color.Black a colorScheme.onBackground
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 8.dp)
         )
     }
