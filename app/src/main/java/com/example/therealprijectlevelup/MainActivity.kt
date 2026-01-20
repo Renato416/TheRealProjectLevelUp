@@ -11,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.therealprijectlevelup.data.SettingsStore
-import com.example.therealprijectlevelup.navigations.NavManager // IMPORTAR EL NUEVO ARCHIVO
+import com.example.therealprijectlevelup.navigations.NavManager
 import com.example.therealprijectlevelup.ui.theme.TheRealPrijectLevelUpTheme
 import com.example.therealprijectlevelup.viewModels.*
 
@@ -22,13 +22,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
 
-            // 1. INSTANCIAS DE VIEWMODELS (Igual que antes)
+            // 1. INSTANCIAMOS EL STORE
             val settingsStore = remember { SettingsStore(context) }
+
+            // 2. INYECTAMOS EL STORE EN LOS VIEWMODELS
             val settingsViewModel = remember { SettingsViewModel(settingsStore) }
             val loginViewModel = remember { LoginViewModel(settingsStore) }
             val registerViewModel = remember { RegisterViewModel(settingsStore) }
             val homeViewModel = remember { HomeViewModel() }
-            val cartViewModel = remember { CartViewModel() }
+
+            // ¡IMPORTANTE! Aquí pasamos settingsStore al CartViewModel
+            val cartViewModel = remember { CartViewModel(settingsStore) }
+
             val chatViewModel = remember { ChatViewModel() }
             val profileViewModel = remember { ProfileViewModel(settingsStore) }
 
@@ -39,16 +44,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 2. AQUÍ ESTÁ EL CAMBIO:
-                    // Borramos el "var currentScreen" y el "when" gigante.
-                    // Llamamos al NavManager pasándole todos los ViewModels.
-
                     NavManager(
                         settingsViewModel = settingsViewModel,
                         loginViewModel = loginViewModel,
                         registerViewModel = registerViewModel,
                         homeViewModel = homeViewModel,
-                        cartViewModel = cartViewModel,
+                        cartViewModel = cartViewModel, // Pasamos el carrito
                         chatViewModel = chatViewModel,
                         profileViewModel = profileViewModel
                     )

@@ -4,56 +4,60 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.therealprijectlevelup.models.CartItem
 import com.example.therealprijectlevelup.viewModels.UserProfile
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// Instancia única del DataStore
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("UserEmail")
 
 class SettingsStore(private val context: Context) {
 
     companion object {
-        // CLAVES DE ALMACENAMIENTO
-        val USER_EMAIL_KEY = stringPreferencesKey("user_email") // Sesión activa
+        val USER_EMAIL_KEY = stringPreferencesKey("user_email")
         val DARK_MODE_KEY = booleanPreferencesKey("dark_mode_enabled")
 
-        // CLAVES DEL PERFIL DE USUARIO
+        // CLAVES DE PERFIL
         val STORED_USER_KEY = stringPreferencesKey("stored_username")
         val STORED_PASS_KEY = stringPreferencesKey("stored_password")
         val STORED_ADDRESS_KEY = stringPreferencesKey("stored_address")
         val STORED_PHONE_KEY = stringPreferencesKey("stored_phone")
         val STORED_BIRTH_KEY = stringPreferencesKey("stored_birth")
         val STORED_EMAIL_KEY = stringPreferencesKey("stored_email_text")
+
+        // NUEVA CLAVE PARA EL CARRITO (Guardado como JSON String)
+        val CART_ITEMS_KEY = stringPreferencesKey("cart_items_json")
     }
 
-    // --------------------------------------------------------
-    // 1. ESTAS SON LAS VARIABLES QUE TE FALTAN PARA EL LOGIN
-    // --------------------------------------------------------
+    private val gson = Gson()
 
-    // Obtener solo el usuario (para LoginViewModel)
-    val getStoredUser: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[STORED_USER_KEY] ?: "Renato416" // Valor por defecto para pruebas
+    // --- LECTURA DEL CARRITO ---
+    val getCartItems: Flow<List<CartItem>> = context.dataStore.data.map { preferences ->
+        val jsonString = preferences[CART_ITEMS_KEY] ?: ""
+        if (jsonString.isNotEmpty()) {
+            val type = object : TypeToken<List<CartItem>>() {}.type
+            gson.fromJson(jsonString, type)
+        } else {
+            emptyList()
+        }
     }
 
-    // Obtener solo la contraseña (para LoginViewModel)
-    val getStoredPass: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[STORED_PASS_KEY] ?: "123456"
+    // --- GUARDADO DEL CARRITO ---
+    suspend fun saveCart(items: List<CartItem>) {
+        val jsonString = gson.toJson(items)
+        context.dataStore.edit { preferences ->
+            preferences[CART_ITEMS_KEY] = jsonString
+        }
     }
 
-    // Obtener email de sesión activa (para saber si entrar directo al Home)
-    val getEmail: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[USER_EMAIL_KEY] ?: ""
-    }
+    // ... (El resto de tus funciones de Usuario/Perfil se mantienen igual) ...
+    val getStoredUser: Flow<String> = context.dataStore.data.map { preferences -> preferences[STORED_USER_KEY] ?: "Renato416" }
+    val getStoredPass: Flow<String> = context.dataStore.data.map { preferences -> preferences[STORED_PASS_KEY] ?: "123456" }
+    val getEmail: Flow<String> = context.dataStore.data.map { preferences -> preferences[USER_EMAIL_KEY] ?: "" }
+    val isDarkMode: Flow<Boolean> = context.dataStore.data.map { preferences -> preferences[DARK_MODE_KEY] ?: false }
 
-    // Obtener Modo Oscuro
-    val isDarkMode: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[DARK_MODE_KEY] ?: false
-    }
-
-    // --------------------------------------------------------
-    // 2. VARIABLE PARA EL PERFIL (ProfileViewModel)
-    // --------------------------------------------------------
     val getUserProfile: Flow<UserProfile> = context.dataStore.data.map { preferences ->
         UserProfile(
             username = preferences[STORED_USER_KEY] ?: "Usuario Invitado",
@@ -64,19 +68,7 @@ class SettingsStore(private val context: Context) {
         )
     }
 
-    // --------------------------------------------------------
-    // 3. FUNCIONES DE GUARDADO
-    // --------------------------------------------------------
-
-    // Guardar TODOS los datos del registro
-    suspend fun saveFullProfile(
-        username: String,
-        pass: String,
-        email: String,
-        address: String,
-        phone: String,
-        birthDate: String
-    ) {
+    suspend fun saveFullProfile(username: String, pass: String, email: String, address: String, phone: String, birthDate: String) {
         context.dataStore.edit { preferences ->
             preferences[STORED_USER_KEY] = username
             preferences[STORED_PASS_KEY] = pass
@@ -87,20 +79,14 @@ class SettingsStore(private val context: Context) {
         }
     }
 
-    // Guardar solo la sesión activa (cuando haces login exitoso)
     suspend fun saveEmail(email: String) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_EMAIL_KEY] = email
-        }
+        context.dataStore.edit { preferences -> preferences[USER_EMAIL_KEY] = email }
     }
 
     suspend fun saveDarkMode(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[DARK_MODE_KEY] = enabled
-        }
+        context.dataStore.edit { preferences -> preferences[DARK_MODE_KEY] = enabled }
     }
 
-    // Guardar credenciales básicas (si se usara en otro lado)
     suspend fun saveCredentials(user: String, pass: String) {
         context.dataStore.edit { preferences ->
             preferences[STORED_USER_KEY] = user

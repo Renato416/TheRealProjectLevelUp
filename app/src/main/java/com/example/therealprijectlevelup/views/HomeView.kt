@@ -38,13 +38,13 @@ fun HomeView(
 ) {
     // 1. OBTENEMOS EL ESTADO DE CARGA
     val isLoading = homeViewModel.isLoading.value
-    // 2. USAMOS LA LISTA FILTRADA (Por consistencia, aunque en Home se ve todo)
+    // 2. USAMOS LA LISTA FILTRADA
     val products = homeViewModel.filteredProducts
 
     val listState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Mostramos el botón si bajamos un poco (primer item ya no es visible)
+    // Mostramos el botón si bajamos un poco
     val showFloatingButton by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
@@ -60,9 +60,7 @@ fun HomeView(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            // A. Volver arriba suavemente
                             listState.animateScrollToItem(0)
-                            // B. ¡AQUÍ ESTÁ LA CORRECCIÓN! Navegar a la búsqueda
                             onNavigate("search")
                         }
                     },
@@ -70,7 +68,6 @@ fun HomeView(
                     contentColor = Color.White,
                     shape = CircleShape
                 ) {
-                    // Mantenemos la Lupa porque la acción principal es BUSCAR
                     Icon(Icons.Default.Search, contentDescription = "Buscar")
                 }
             }
@@ -119,7 +116,6 @@ fun HomeView(
                     }
                 }
 
-                // Si no hay productos (por ejemplo si el filtro quedó sucio)
                 if (products.isEmpty()) {
                     item(span = { GridItemSpan(2) }) {
                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -219,8 +215,9 @@ fun ProductItem(
                     .fillMaxWidth()
                     .height(45.dp)
             ) {
+                // --- CAMBIO AQUI ---
                 Text(
-                    text = "Comprar",
+                    text = "Ver más",
                     fontWeight = FontWeight.Medium,
                     fontSize = 16.sp
                 )

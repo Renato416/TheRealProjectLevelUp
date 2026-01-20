@@ -23,9 +23,9 @@ fun NavManager(
     profileViewModel: ProfileViewModel
 ) {
     val navController = rememberNavController()
-    val userSession by settingsViewModel.userEmail.collectAsState()
 
-    val startNode = if (userSession.isNotEmpty()) "home" else "login"
+    // Forzamos inicio en Login por seguridad
+    val startNode = "login"
 
     NavHost(navController = navController, startDestination = startNode) {
 
@@ -33,14 +33,10 @@ fun NavManager(
             LaunchedEffect(Unit) { loginViewModel.loginResult.value = "" }
 
             LoginScreen(
-                // --- CAMBIO CRÍTICO AQUÍ ---
-                // Limpiamos ANTES de navegar. Esto garantiza que la variable "SUCCESS"
-                // se borre antes de que la pantalla de registro se cree.
                 onRegisterClick = {
                     registerViewModel.clean()
                     navController.navigate("register")
                 },
-                // ---------------------------
                 onLoginSuccess = {
                     navController.navigate("home") {
                         popUpTo("login") { inclusive = true }
@@ -51,16 +47,12 @@ fun NavManager(
         }
 
         composable("register") {
-            // --- ELIMINA EL LaunchedEffect DE AQUÍ ---
-            // Ya no lo necesitamos porque limpiamos en el click del login.
-
             RegisterScreen(
                 onBack = { navController.popBackStack() },
                 viewModel = registerViewModel
             )
         }
 
-        // ... EL RESTO DE TUS COMPOSABLES (home, search, etc) SIGUEN IGUAL ...
         composable("home") {
             HomeView(
                 onNavigate = { route -> navController.navigate(route) },
@@ -77,6 +69,7 @@ fun NavManager(
             )
         }
 
+        // --- RUTA ACTUALIZADA PARA EL CARRITO ---
         composable(
             route = "detail/{id}",
             arguments = listOf(navArgument("id") { type = NavType.IntType })
@@ -86,6 +79,7 @@ fun NavManager(
                 productId = id,
                 homeViewModel = homeViewModel,
                 settingsViewModel = settingsViewModel,
+                cartViewModel = cartViewModel, // PASAMOS EL VIEWMODEL
                 onBack = { navController.popBackStack() },
                 onNavigate = { route -> navController.navigate(route) }
             )

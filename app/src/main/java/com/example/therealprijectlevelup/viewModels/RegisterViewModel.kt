@@ -22,7 +22,6 @@ class RegisterViewModel(private val settingsStore: SettingsStore) : ViewModel() 
         isLoading.value = false
     }
 
-    // Recibimos la función para volver
     fun register(onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading.value = true
@@ -41,7 +40,6 @@ class RegisterViewModel(private val settingsStore: SettingsStore) : ViewModel() 
                 u.password != confirm ->
                     registerResult.value = "Las contraseñas no coinciden"
                 else -> {
-                    // 1. GUARDAMOS EL PERFIL COMPLETO (Esto rellena el ProfileView)
                     settingsStore.saveFullProfile(
                         username = u.username,
                         pass = u.password,
@@ -51,11 +49,7 @@ class RegisterViewModel(private val settingsStore: SettingsStore) : ViewModel() 
                         birthDate = u.birthDate
                     )
 
-                    // 2. IMPORTANTE: ELIMINAMOS "saveEmail".
-                    // NO guardamos la sesión activa aquí para evitar el error de pantalla negra.
-                    // settingsStore.saveEmail(u.username) <--- ESTA LINEA ERA EL ERROR
-
-                    onSuccess() // Navegamos atrás tranquilamente
+                    onSuccess()
                     clean()
                 }
             }
