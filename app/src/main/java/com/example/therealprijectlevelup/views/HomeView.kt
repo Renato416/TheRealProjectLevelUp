@@ -3,7 +3,6 @@ package com.example.therealprijectlevelup.views
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -21,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage // IMPORTANTE: COIL
 import com.example.therealprijectlevelup.models.Product
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
@@ -36,15 +35,11 @@ fun HomeView(
     homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    // 1. OBTENEMOS EL ESTADO DE CARGA
     val isLoading = homeViewModel.isLoading.value
-    // 2. USAMOS LA LISTA FILTRADA
     val products = homeViewModel.filteredProducts
-
     val listState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
-    // Mostramos el botón si bajamos un poco
     val showFloatingButton by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
@@ -78,17 +73,13 @@ fun HomeView(
     ) { paddingValues ->
 
         if (isLoading) {
-            // SPINNER DE CARGA
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color(0xFF5877FF))
             }
         } else {
-            // LISTA DE PRODUCTOS
             LazyVerticalGrid(
                 state = listState,
                 columns = GridCells.Fixed(2),
@@ -172,8 +163,9 @@ fun ProductItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Image(
-                painter = painterResource(id = product.imageRes),
+            // CORRECCIÓN: Usamos AsyncImage y product.imageName
+            AsyncImage(
+                model = product.imageName,
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(120.dp)
@@ -215,7 +207,6 @@ fun ProductItem(
                     .fillMaxWidth()
                     .height(45.dp)
             ) {
-                // --- CAMBIO AQUI ---
                 Text(
                     text = "Ver más",
                     fontWeight = FontWeight.Medium,

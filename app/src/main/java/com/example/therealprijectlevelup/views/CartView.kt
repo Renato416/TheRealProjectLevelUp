@@ -1,7 +1,6 @@
 package com.example.therealprijectlevelup.views
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage // NECESARIO
 import com.example.therealprijectlevelup.models.CartItem
 import com.example.therealprijectlevelup.viewModels.CartViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
@@ -35,7 +34,6 @@ fun CartView(
 ) {
     val cartItems by cartViewModel.cartItems.collectAsState()
     val totalPrice by cartViewModel.totalPrice.collectAsState()
-
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     Scaffold(
@@ -71,7 +69,6 @@ fun CartView(
                             item = item,
                             onIncrease = { cartViewModel.increaseQuantity(item) },
                             onDecrease = { cartViewModel.decreaseQuantity(item) },
-                            // 1. AQUÍ DEFINIMOS LA NAVEGACIÓN AL TOCAR EL ITEM
                             onItemClick = { onNavigate("detail/${item.id}") }
                         )
                     }
@@ -80,15 +77,12 @@ fun CartView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // SECCIÓN INFERIOR: TOTAL
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -101,13 +95,9 @@ fun CartView(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
-
                     Button(
-                        onClick = { /* LÓGICA DE PAGO FUTURA */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF5877FF),
-                            contentColor = Color.White
-                        ),
+                        onClick = { /* PAGO */ },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5877FF), contentColor = Color.White),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Pagar", fontSize = 16.sp)
@@ -123,31 +113,25 @@ fun CartItemRow(
     item: CartItem,
     onIncrease: () -> Unit,
     onDecrease: () -> Unit,
-    onItemClick: () -> Unit // 2. RECIBIMOS EL EVENTO CLICK
+    onItemClick: () -> Unit
 ) {
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            // 3. HACEMOS LA TARJETA CLICABLE
-            .clickable { onItemClick() },
+        modifier = Modifier.fillMaxWidth().clickable { onItemClick() },
         border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = item.imageRes),
+            // USAMOS ASYNCIMAGE AQUÍ
+            AsyncImage(
+                model = item.imageUrl,
                 contentDescription = item.name,
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(4.dp),
+                modifier = Modifier.size(80.dp).padding(4.dp),
                 contentScale = ContentScale.Fit
             )
 
@@ -169,18 +153,13 @@ fun CartItemRow(
                 )
             }
 
-            // CONTROLES DE CANTIDAD
-            // Nota: Los botones seguirán funcionando independientemente del click en la tarjeta
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-                    .padding(4.dp)
+                modifier = Modifier.background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp)).padding(4.dp)
             ) {
                 IconButton(onClick = onDecrease, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Default.Remove, contentDescription = "-", tint = Color.Black, modifier = Modifier.size(16.dp))
                 }
-
                 Text(
                     text = "${item.quantity}",
                     fontSize = 16.sp,
@@ -188,7 +167,6 @@ fun CartItemRow(
                     color = Color.Black,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-
                 IconButton(onClick = onIncrease, modifier = Modifier.size(28.dp)) {
                     Icon(Icons.Default.Add, contentDescription = "+", tint = Color.Black, modifier = Modifier.size(16.dp))
                 }
