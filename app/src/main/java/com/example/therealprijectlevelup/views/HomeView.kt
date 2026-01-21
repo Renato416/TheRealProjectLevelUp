@@ -4,11 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,7 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage // IMPORTANTE: COIL
+import coil.compose.AsyncImage
 import com.example.therealprijectlevelup.models.Product
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
@@ -35,8 +31,9 @@ fun HomeView(
     homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel
 ) {
-    val isLoading = homeViewModel.isLoading.value
-    val products = homeViewModel.filteredProducts
+    val isLoading by homeViewModel.isLoading.collectAsState()
+    val products by homeViewModel.filteredProducts.collectAsState()
+
     val listState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -74,7 +71,9 @@ fun HomeView(
 
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color(0xFF5877FF))
@@ -109,7 +108,12 @@ fun HomeView(
 
                 if (products.isEmpty()) {
                     item(span = { GridItemSpan(2) }) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text("No se encontraron productos", color = Color.Gray)
                         }
                     }

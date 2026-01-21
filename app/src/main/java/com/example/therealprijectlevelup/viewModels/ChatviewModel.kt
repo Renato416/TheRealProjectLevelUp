@@ -28,7 +28,7 @@ class ChatViewModel : ViewModel() {
 
             // Respuesta del bot
             _messages.value += ChatMessage(
-                "si.",
+                "si. te sacas un 7",
                 Sender.BOT
             )
         }

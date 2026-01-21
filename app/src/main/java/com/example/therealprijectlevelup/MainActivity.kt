@@ -14,28 +14,31 @@ import com.example.therealprijectlevelup.data.SettingsStore
 import com.example.therealprijectlevelup.navigations.NavManager
 import com.example.therealprijectlevelup.ui.theme.TheRealPrijectLevelUpTheme
 import com.example.therealprijectlevelup.viewModels.*
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             val context = LocalContext.current
 
-            // 1. INSTANCIAMOS EL STORE
+            // Stores (esto está bien)
             val settingsStore = remember { SettingsStore(context) }
 
-            // 2. INYECTAMOS EL STORE EN LOS VIEWMODELS
+            // ViewModels SIN Hilt (correcto si NO usan repository)
             val settingsViewModel = remember { SettingsViewModel(settingsStore) }
             val loginViewModel = remember { LoginViewModel(settingsStore) }
             val registerViewModel = remember { RegisterViewModel(settingsStore) }
-            val homeViewModel = remember { HomeViewModel() }
-
-            // ¡IMPORTANTE! Aquí pasamos settingsStore al CartViewModel
             val cartViewModel = remember { CartViewModel(settingsStore) }
-
             val chatViewModel = remember { ChatViewModel() }
             val profileViewModel = remember { ProfileViewModel(settingsStore) }
+
+            // 🚨 HomeViewModel CON HILT
+            val homeViewModel: HomeViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 
             val darkModeActive by settingsViewModel.isDarkMode.collectAsState()
 
@@ -49,7 +52,7 @@ class MainActivity : ComponentActivity() {
                         loginViewModel = loginViewModel,
                         registerViewModel = registerViewModel,
                         homeViewModel = homeViewModel,
-                        cartViewModel = cartViewModel, // Pasamos el carrito
+                        cartViewModel = cartViewModel,
                         chatViewModel = chatViewModel,
                         profileViewModel = profileViewModel
                     )
