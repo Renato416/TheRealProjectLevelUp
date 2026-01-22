@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.therealprijectlevelup.models.Product
+import com.example.therealprijectlevelup.models.domain.ProductDomain
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 import kotlinx.coroutines.launch
@@ -130,7 +131,7 @@ fun HomeView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductItem(
-    product: Product,
+    product: ProductDomain,
     onClick: () -> Unit
 ) {
     var visible by remember { mutableStateOf(false) }
@@ -164,12 +165,11 @@ fun ProductItem(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // CORRECCIÓN: Usamos AsyncImage y product.imageName
+
             AsyncImage(
-                model = product.imageName,
+                model = product.imageUrl,
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(120.dp)
@@ -182,10 +182,9 @@ fun ProductItem(
             Text(
                 text = product.name,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Normal,
-                color = Color.Black,
                 fontSize = 20.sp,
-                maxLines = 1
+                maxLines = 1,
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -193,9 +192,8 @@ fun ProductItem(
             Text(
                 text = "$ ${product.price}",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Normal,
-                color = Color.Black,
-                fontSize = 22.sp
+                fontSize = 22.sp,
+                color = Color.Black
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -213,8 +211,8 @@ fun ProductItem(
             ) {
                 Text(
                     text = "Ver más",
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
