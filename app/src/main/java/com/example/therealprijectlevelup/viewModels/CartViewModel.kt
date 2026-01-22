@@ -4,13 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.therealprijectlevelup.data.SettingsStore
 import com.example.therealprijectlevelup.models.CartItem
-import com.example.therealprijectlevelup.models.Product
+import com.example.therealprijectlevelup.models.domain.ProductDomain
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class CartViewModel(private val settingsStore: SettingsStore) : ViewModel() {
+class CartViewModel(
+    private val settingsStore: SettingsStore
+) : ViewModel() {
 
     private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
     val cartItems: StateFlow<List<CartItem>> = _cartItems.asStateFlow()
@@ -27,66 +29,65 @@ class CartViewModel(private val settingsStore: SettingsStore) : ViewModel() {
         }
     }
 
-    fun addToCart(product: Product) {
+    fun addToCart(product: ProductDomain) {
         viewModelScope.launch {
-            val currentList = _cartItems.value.toMutableList()
-            // Conversión segura de ID y Precio
-            val productIdInt = product.id?.toInt() ?: 0
-            val priceInt = product.price.toInt()
+            val list = _cartItems.value.toMutableList()
 
-            val existingItem = currentList.find { it.id == productIdInt }
+            val productId = product.id.toInt()
+            val price = product.price.toInt()
 
-            if (existingItem != null) {
-                val index = currentList.indexOf(existingItem)
-                currentList[index] = existingItem.copy(quantity = existingItem.quantity + 1)
+            val index = list.indexOfFirst { it.id == productId }
+
+            if (index >= 0) {
+                val item = list[index]
+                list[index] = item.copy(quantity = item.quantity + 1)
             } else {
-                currentList.add(
+                list.add(
                     CartItem(
-                        id = productIdInt,
+                        id = productId,
                         name = product.name,
                         quantity = 1,
-                        price = priceInt,
-                        imageUrl = product.imageName // AHORA SÍ FUNCIONARÁ
+                        price = price,
+                        imageUrl = product.imageUrl
                     )
                 )
             }
-            updateCart(currentList)
+
+            updateCart(list)
         }
     }
 
     fun increaseQuantity(item: CartItem) {
-        val currentList = _cartItems.value.toMutableList()
-        val index = currentList.indexOfFirst { it.id == item.id }
-        if (index != -1) {
-            currentList[index] = item.copy(quantity = item.quantity + 1)
-            updateCart(currentList)
+        val list = _cartItems.value.toMutableList()
+        val index = list.indexOfFirst { it.id == item.id }
+        if (index >= 0) {
+            list[index] = item.copy(quantity = item.quantity + 1)
+            updateCart(list)
         }
     }
 
     fun decreaseQuantity(item: CartItem) {
-        val currentList = _cartItems.value.toMutableList()
-        val index = currentList.indexOfFirst { it.id == item.id }
-        if (index != -1) {
+        val list = _cartItems.value.toMutableList()
+        val index = list.indexOfFirst { it.id == item.id }
+        if (index >= 0) {
             if (item.quantity > 1) {
-                currentList[index] = item.copy(quantity = item.quantity - 1)
+                list[index] = item.copy(quantity = item.quantity - 1)
             } else {
-                currentList.removeAt(index)
+                list.removeAt(index)
             }
-            updateCart(currentList)
+            updateCart(list)
         }
     }
 
-    private fun updateCart(newList: List<CartItem>) {
-        _cartItems.value = newList
-        calculateTotal(newList)
+    private fun updateCart(list: List<CartItem>) {
+        _cartItems.value = list
+        calculateTotal(list)
         viewModelScope.launch {
-            settingsStore.saveCart(newList)
+            settingsStore.saveCart(list)
         }
     }
 
     private fun calculateTotal(items: List<CartItem>) {
-        var total = 0
-        items.forEach { total += (it.price * it.quantity) }
-        _totalPrice.value = total
+        _totalPrice.value = items.sumOf { it.price * it.quantity }
     }
 }

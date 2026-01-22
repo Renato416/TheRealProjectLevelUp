@@ -17,21 +17,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage // IMPORTANTE
+import coil.compose.AsyncImage
+import com.example.therealprijectlevelup.models.domain.ProductDomain
 import com.example.therealprijectlevelup.viewModels.CartViewModel
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
 
 @Composable
 fun ProductDetailView(
-    productId: Int,
+    productId: Long, // ✅ LONG
     homeViewModel: HomeViewModel,
     settingsViewModel: SettingsViewModel,
     cartViewModel: CartViewModel,
     onBack: () -> Unit,
     onNavigate: (String) -> Unit
 ) {
-    val product = homeViewModel.getProductById(productId)
+    val product: ProductDomain? = homeViewModel.getProductById(productId)
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -43,6 +44,7 @@ fun ProductDetailView(
                     viewModel = settingsViewModel,
                     onSearchClick = { onNavigate("search") }
                 )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -64,32 +66,47 @@ fun ProductDetailView(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             }
         },
-        bottomBar = { LevelUpBottomNavigation("home", onNavigate) }
+        bottomBar = {
+            LevelUpBottomNavigation("home", onNavigate)
+        }
     ) { padding ->
+
         if (product != null) {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .verticalScroll(scrollState)
             ) {
-                // 1. IMAGEN CORREGIDA CON COIL
+
+                // 🖼️ IMAGEN
                 Card(
-                    shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp),
+                    shape = RoundedCornerShape(
+                        bottomStart = 32.dp,
+                        bottomEnd = 32.dp
+                    ),
                     elevation = CardDefaults.cardElevation(0.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    modifier = Modifier.fillMaxWidth().height(300.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
                 ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        // USO DE ASYNC IMAGE
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
                         AsyncImage(
-                            model = product.imageName,
+                            model = product.imageUrl, // ✅ CORRECTO
                             contentDescription = product.name,
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize().padding(24.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp)
                         )
                     }
                 }
@@ -97,6 +114,7 @@ fun ProductDetailView(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+
                     Text(
                         text = product.name,
                         fontSize = 26.sp,
@@ -108,19 +126,29 @@ fun ProductDetailView(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+
                         Text(
                             text = "$ ${product.price}",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF5877FF)
                         )
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700))
-                            Text(text = "${product.rating}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700)
+                            )
+                            Text(
+                                text = product.rating.toString(),
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(start = 4.dp)
+                            )
                         }
                     }
 
@@ -129,16 +157,16 @@ fun ProductDetailView(
                     Text(
                         text = "Descripción",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        fontWeight = FontWeight.SemiBold
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
                         text = product.description,
                         fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 22.sp
+                        lineHeight = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -148,18 +176,31 @@ fun ProductDetailView(
                             cartViewModel.addToCart(product)
                             onNavigate("cart")
                         },
-                        modifier = Modifier.fillMaxWidth().height(55.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(55.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5877FF)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF5877FF)
+                        ),
                         elevation = ButtonDefaults.buttonElevation(8.dp)
                     ) {
-                        Text(text = "Agregar al Carrito", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "Agregar al carrito",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
+
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
+
         } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Producto no encontrado")
             }
         }

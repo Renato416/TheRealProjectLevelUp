@@ -11,7 +11,10 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("UserEmail")
+// ⚠️ Nombre genérico y correcto del DataStore
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "user_preferences"
+)
 
 class SettingsStore(private val context: Context) {
 
@@ -19,7 +22,7 @@ class SettingsStore(private val context: Context) {
         val USER_EMAIL_KEY = stringPreferencesKey("user_email")
         val DARK_MODE_KEY = booleanPreferencesKey("dark_mode_enabled")
 
-        // CLAVES DE PERFIL
+        // PERFIL
         val STORED_USER_KEY = stringPreferencesKey("stored_username")
         val STORED_PASS_KEY = stringPreferencesKey("stored_password")
         val STORED_ADDRESS_KEY = stringPreferencesKey("stored_address")
@@ -27,70 +30,96 @@ class SettingsStore(private val context: Context) {
         val STORED_BIRTH_KEY = stringPreferencesKey("stored_birth")
         val STORED_EMAIL_KEY = stringPreferencesKey("stored_email_text")
 
-        // NUEVA CLAVE PARA EL CARRITO (Guardado como JSON String)
+        // CARRITO
         val CART_ITEMS_KEY = stringPreferencesKey("cart_items_json")
     }
 
     private val gson = Gson()
 
-    // --- LECTURA DEL CARRITO ---
-    val getCartItems: Flow<List<CartItem>> = context.dataStore.data.map { preferences ->
-        val jsonString = preferences[CART_ITEMS_KEY] ?: ""
-        if (jsonString.isNotEmpty()) {
+    // =========================
+    // 🛒 CARRITO
+    // =========================
+    val getCartItems: Flow<List<CartItem>> = context.dataStore.data.map { prefs ->
+        val json = prefs[CART_ITEMS_KEY]
+        if (!json.isNullOrEmpty()) {
             val type = object : TypeToken<List<CartItem>>() {}.type
-            gson.fromJson(jsonString, type)
+            gson.fromJson(json, type)
         } else {
             emptyList()
         }
     }
 
-    // --- GUARDADO DEL CARRITO ---
     suspend fun saveCart(items: List<CartItem>) {
-        val jsonString = gson.toJson(items)
-        context.dataStore.edit { preferences ->
-            preferences[CART_ITEMS_KEY] = jsonString
+        context.dataStore.edit { prefs ->
+            prefs[CART_ITEMS_KEY] = gson.toJson(items)
         }
     }
 
-    // ... (El resto de tus funciones de Usuario/Perfil se mantienen igual) ...
-    val getStoredUser: Flow<String> = context.dataStore.data.map { preferences -> preferences[STORED_USER_KEY] ?: "Renato416" }
-    val getStoredPass: Flow<String> = context.dataStore.data.map { preferences -> preferences[STORED_PASS_KEY] ?: "123456" }
-    val getEmail: Flow<String> = context.dataStore.data.map { preferences -> preferences[USER_EMAIL_KEY] ?: "" }
-    val isDarkMode: Flow<Boolean> = context.dataStore.data.map { preferences -> preferences[DARK_MODE_KEY] ?: false }
+    // =========================
+    // 🌙 DARK MODE
+    // =========================
+    val isDarkMode: Flow<Boolean> =
+        context.dataStore.data.map { prefs ->
+            prefs[DARK_MODE_KEY] ?: false
+        }
 
-    val getUserProfile: Flow<UserProfile> = context.dataStore.data.map { preferences ->
-        UserProfile(
-            username = preferences[STORED_USER_KEY] ?: "Usuario Invitado",
-            address = preferences[STORED_ADDRESS_KEY] ?: "Sin dirección",
-            email = preferences[STORED_EMAIL_KEY] ?: "Sin email",
-            phone = preferences[STORED_PHONE_KEY] ?: "Sin teléfono",
-            birthDate = preferences[STORED_BIRTH_KEY] ?: "Sin fecha"
-        )
+    suspend fun saveDarkMode(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[DARK_MODE_KEY] = enabled
+        }
     }
 
-    suspend fun saveFullProfile(username: String, pass: String, email: String, address: String, phone: String, birthDate: String) {
-        context.dataStore.edit { preferences ->
-            preferences[STORED_USER_KEY] = username
-            preferences[STORED_PASS_KEY] = pass
-            preferences[STORED_EMAIL_KEY] = email
-            preferences[STORED_ADDRESS_KEY] = address
-            preferences[STORED_PHONE_KEY] = phone
-            preferences[STORED_BIRTH_KEY] = birthDate
+    // =========================
+    // 👤 PERFIL / USUARIO
+    // =========================
+    val getStoredUser: Flow<String> =
+        context.dataStore.data.map { it[STORED_USER_KEY] ?: "Usuario Invitado" }
+
+    val getStoredPass: Flow<String> =
+        context.dataStore.data.map { it[STORED_PASS_KEY] ?: "" }
+
+    val getEmail: Flow<String> =
+        context.dataStore.data.map { it[USER_EMAIL_KEY] ?: "" }
+
+    val getUserProfile: Flow<UserProfile> =
+        context.dataStore.data.map { prefs ->
+            UserProfile(
+                username = prefs[STORED_USER_KEY] ?: "Usuario Invitado",
+                address = prefs[STORED_ADDRESS_KEY] ?: "",
+                email = prefs[STORED_EMAIL_KEY] ?: "",
+                phone = prefs[STORED_PHONE_KEY] ?: "",
+                birthDate = prefs[STORED_BIRTH_KEY] ?: ""
+            )
+        }
+
+    suspend fun saveFullProfile(
+        username: String,
+        pass: String,
+        email: String,
+        address: String,
+        phone: String,
+        birthDate: String
+    ) {
+        context.dataStore.edit { prefs ->
+            prefs[STORED_USER_KEY] = username
+            prefs[STORED_PASS_KEY] = pass
+            prefs[STORED_EMAIL_KEY] = email
+            prefs[STORED_ADDRESS_KEY] = address
+            prefs[STORED_PHONE_KEY] = phone
+            prefs[STORED_BIRTH_KEY] = birthDate
         }
     }
 
     suspend fun saveEmail(email: String) {
-        context.dataStore.edit { preferences -> preferences[USER_EMAIL_KEY] = email }
-    }
-
-    suspend fun saveDarkMode(enabled: Boolean) {
-        context.dataStore.edit { preferences -> preferences[DARK_MODE_KEY] = enabled }
+        context.dataStore.edit { prefs ->
+            prefs[USER_EMAIL_KEY] = email
+        }
     }
 
     suspend fun saveCredentials(user: String, pass: String) {
-        context.dataStore.edit { preferences ->
-            preferences[STORED_USER_KEY] = user
-            preferences[STORED_PASS_KEY] = pass
+        context.dataStore.edit { prefs ->
+            prefs[STORED_USER_KEY] = user
+            prefs[STORED_PASS_KEY] = pass
         }
     }
 }
