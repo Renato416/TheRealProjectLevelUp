@@ -78,6 +78,4 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
 
-    // Coil
-    implementation(libs.coil)
 }

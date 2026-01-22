@@ -16,11 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.therealprijectlevelup.models.Product
+import coil.request.ImageRequest
 import com.example.therealprijectlevelup.models.domain.ProductDomain
 import com.example.therealprijectlevelup.viewModels.HomeViewModel
 import com.example.therealprijectlevelup.viewModels.SettingsViewModel
@@ -168,8 +169,12 @@ fun ProductItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // AsyncImage con ImageRequest.Builder
             AsyncImage(
-                model = product.imageUrl,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(product.imageUrl)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(120.dp)
