@@ -2,7 +2,7 @@ package com.example.therealprijectlevelup.repositories
 
 import com.example.therealprijectlevelup.data.api.ProductApi
 import com.example.therealprijectlevelup.models.domain.ProductDomain
-import com.example.therealprijectlevelup.utils.ProductMapper.toDomain
+import com.example.therealprijectlevelup.utils.toDomain
 import javax.inject.Inject
 
 class ProductRepositoryImpl @Inject constructor(
@@ -10,6 +10,9 @@ class ProductRepositoryImpl @Inject constructor(
 ) : ProductRepository {
 
     override suspend fun getProducts(): List<ProductDomain> {
-        return api.getProducts().map { it.toDomain() }
+        return api.getProducts()
+            ._embedded
+            .productoDTOList
+            .map { it.toDomain() }
     }
 }

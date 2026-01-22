@@ -1,11 +1,10 @@
 package com.example.therealprijectlevelup.data.api
 
-import com.example.therealprijectlevelup.data.dtos.ProductDto
 import retrofit2.http.GET
-import com.example.therealprijectlevelup.utils.Constants
+import com.example.therealprijectlevelup.data.dtos.ProductResponse
 
 interface ProductApi {
 
-    @GET(Constants.PRODUCTS_ENDPOINT)
-    suspend fun getProducts(): List<ProductDto>
+    @GET("api/v2/productos")
+    suspend fun getProducts(): ProductResponse
 }

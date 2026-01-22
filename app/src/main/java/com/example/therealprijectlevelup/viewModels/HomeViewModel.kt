@@ -11,47 +11,32 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val productRepository: ProductRepository
+    private val repository: ProductRepository
 ) : ViewModel() {
 
     private val _products = MutableStateFlow<List<ProductDomain>>(emptyList())
-    val products: StateFlow<List<ProductDomain>> = _products.asStateFlow()
+    val filteredProducts = _products.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    val searchText = MutableStateFlow("")
+    val isLoading = MutableStateFlow(true)
 
     init {
         loadProducts()
     }
 
-    val filteredProducts: StateFlow<List<ProductDomain>> =
-        combine(products, searchText) { products, query ->
-            if (query.isBlank()) products
-            else products.filter {
-                it.name.contains(query, ignoreCase = true)
-            }
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            emptyList()
-        )
-
     private fun loadProducts() {
         viewModelScope.launch {
-            _isLoading.value = true
             try {
-                _products.value = productRepository.getProducts()
+                isLoading.value = true
+                _products.value = repository.getProducts()
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                _isLoading.value = false
+                isLoading.value = false
             }
         }
     }
 
-    fun getProductById(id: Long): ProductDomain? {
-        return _products.value.firstOrNull { it.id == id }
-    }
+    fun getProductById(id: Long): ProductDomain? =
+        _products.value.find { it.id == id }
 }
+
